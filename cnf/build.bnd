@@ -1,0 +1,25 @@
+
+base.version            1.0.0
+
+Bundle-Version:         ${base.version}.${tstamp}
+Bundle-Copyright:       Copyright (c) ACME (2014, ${tstamp;yyyy}). All Rights Reserved.
+Bundle-Vendor:          ACME Inc
+Bundle-License:         http://opensource.org/licenses/apache2.0.php; \
+                            link="http://www.apache.org/licenses/LICENSE-2.0"; \
+                            description="Apache License, Version 2.0"
+Bundle-DocURL:          http://acme.com
+Git-Descriptor:         ${system-allow-fail;git describe --dirty --always}
+Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
+
+
+-remoteworkspace        true
+
+-groupid:               com.acme
+-pom:                   version=${base.version}-SNAPSHOT
+
+
+pwd                     ${env;REPOSITORY_PASSWORD;}
+usr                     ${env;REPOSITORY_USERNAME;}
+
+-runfw:                 org.apache.felix.framework
+-runee:                 JavaSE-1.8

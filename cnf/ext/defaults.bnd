@@ -1,0 +1,36 @@
+-plugin.10.build: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://bndtools.jfrog.io/bndtools/update/"; \
+        releaseUrl=https://repo.maven.apache.org/maven2/; \
+        index=${.}/build.mvn; \
+        readOnly=true; \
+        name="Build"
+
+-plugin.20.runtime: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://bndtools.jfrog.io/bndtools/update/"; \
+        releaseUrl="https://repo.maven.apache.org/maven2/,https://repo.everit.biz/artifactory/public-release/"; \
+        index=${.}/runtime.mvn; \
+        readOnly=true; \
+        name="Runtime"
+
+-runblacklist.enroute: \
+    osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)', \
+    osgi.identity;filter:='(osgi.identity=osgi.cmpn)', \
+    osgi.identity;filter:='(osgi.identity=osgi.core)', \
+    osgi.identity;filter:='(osgi.identity=biz.aQute.junit)', \
+    osgi.identity;filter:='(osgi.identity=biz.aQute.launcher)', \
+    osgi.identity;filter:='(osgi.identity=biz.aQute.remote.launcher)', \
+    osgi.identity;filter:='(osgi.identity=org.osgi.service.*)', \
+    osgi.identity;filter:='(osgi.identity=slf4j.*)', \
+
+
+-runsystemcapabilities.dflt:    ${native_capability}
+
+debug-bundles: \
+    osgi.identity;filter:='(osgi.identity=osgi.enroute.webconsole.xray.provider)',\
+    osgi.implementation;filter:='(osgi.implementation=osgi.metatype)',\
+    osgi.implementation;filter:='(osgi.implementation=osgi.event)',\
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)', \
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.webconsole.plugins.ds)'
