@@ -1,6 +1,6 @@
 -plugin.10.build: \
     aQute.bnd.repository.maven.provider.MavenBndRepository; \
-        snapshotUrl="https://bndtools.jfrog.io/bndtools/update/"; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
         releaseUrl=https://repo.maven.apache.org/maven2/; \
         index=${.}/build.mvn; \
         readOnly=true; \
@@ -8,8 +8,7 @@
 
 -plugin.20.runtime: \
     aQute.bnd.repository.maven.provider.MavenBndRepository; \
-        snapshotUrl="https://bndtools.jfrog.io/bndtools/update/"; \
-        releaseUrl="https://repo.maven.apache.org/maven2/,https://repo.everit.biz/artifactory/public-release/"; \
+        releaseUrl="https://repo.maven.apache.org/maven2/"; \
         index=${.}/runtime.mvn; \
         readOnly=true; \
         name="Runtime"
