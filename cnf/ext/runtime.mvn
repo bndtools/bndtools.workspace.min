@@ -22,6 +22,7 @@ org.apache.felix:org.apache.felix.gogo.runtime:1.1.2
 org.apache.felix:org.apache.felix.gogo.shell:1.1.2
 org.apache.felix:org.apache.felix.gogo.jline:1.1.4
 org.apache.felix:org.apache.felix.shell.remote:1.2.0
+org.jline:jline:3.13.3
 
 org.apache.felix:org.apache.felix.threaddump:1.0.0
 org.apache.felix:org.apache.felix.converter:1.0.12

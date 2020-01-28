@@ -1,8 +1,7 @@
-name: Build
+name: CI Build
   
 on: 
     push:
-        branches-ignore: master
     pull_request:
 
 env:
@@ -23,4 +22,3 @@ jobs:
         -   name: Build
             shell: bash
             run: ./gradlew build
-
