@@ -7,5 +7,4 @@ Archive
 /.gradle/
 /reports/
 /generated/
-/install-jdk.sh
 .to
