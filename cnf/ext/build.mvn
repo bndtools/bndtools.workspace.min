@@ -5,7 +5,7 @@ biz.aQute.bnd:aQute.libg:4.3.1
 biz.aQute.bnd:biz.aQute.launchpad:4.3.1
 biz.aQute.bnd:biz.aQute.bnd.runtime.gogo:4.3.1
 biz.aQute.bnd:biz.aQute.bnd.runtime.snapshot:4.3.1
-biz.aQute:biz.aQute.osgi.templates:1.0.0-SNAPSHOT
+biz.aQute:biz.aQute.osgi.templates:1.10.0
 
 org.osgi:osgi.annotation:7.0.0
 org.osgi:org.osgi.dto:1.1.0
