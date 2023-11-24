@@ -4,7 +4,7 @@
         releaseUrl=https://repo.maven.apache.org/maven2/; \
         index=${.}/build.mvn; \
         readOnly=true; \
-        name="Build"
+        name="OSGI R8 - Build"
 
 -plugin.20.runtime: \
     aQute.bnd.repository.maven.provider.MavenBndRepository; \
@@ -12,7 +12,7 @@
         releaseUrl="https://repo.maven.apache.org/maven2/"; \
         index=${.}/runtime.mvn; \
         readOnly=true; \
-        name="Runtime"
+        name="OSGI R8 - Runtime Distro"
 
 -runblacklist.enroute: \
     osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)', \
