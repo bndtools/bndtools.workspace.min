@@ -98,6 +98,6 @@ org.eclipse.ecf:ch.ethz.iks.slp:1.4.1
 
 org.glassfish:javax.json:1.1.4
 
-net.sourceforge.htmlunit:htmlunit-osgi:2.35.0
+# not found anymore net.sourceforge.htmlunit:htmlunit-osgi:2.35.0
 
 biz.aQute:osgi.enroute.webconsole.xray.provider:2.2.0
