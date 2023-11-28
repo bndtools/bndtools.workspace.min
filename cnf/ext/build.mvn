@@ -10,10 +10,7 @@ biz.aQute:biz.aQute.osgi.templates:1.10.0
 org.osgi:org.osgi.annotation.bundle:2.0.0
 org.osgi:org.osgi.annotation.versioning:1.1.2
 org.osgi:org.osgi.application:1.0.0
-org.osgi:org.osgi.compendium:5.0.0
-org.osgi:org.osgi.core:6.0.0
 org.osgi:org.osgi.dto:1.1.1
-org.osgi:org.osgi.enterprise:5.0.0
 org.osgi:org.osgi.framework:1.10.0
 org.osgi:org.osgi.jmx:1.1.0
 org.osgi:org.osgi.namespace.contract:1.0.0
@@ -92,7 +89,6 @@ org.osgi:osgi.annotation:8.1.0
 org.osgi:osgi.core:8.0.0
 org.osgi:osgi.enterprise:7.0.0
 org.osgi:osgi.promise:8.1.0
-org.osgi:osgi.residential:6.0.0
 org.osgi:slf4j.osgi:2.0.0
 
 org.slf4j:slf4j-api:2.0.9
