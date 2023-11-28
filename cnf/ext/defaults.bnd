@@ -36,4 +36,4 @@ target-dir              generated${if;${driver;eclipse};;/${driver}}
 src                     src/main/java, src/main/resources
 testsrc                 src/test/java
 bin                     ${target-dir}/classes
-testbin                 ${target-dir}/test-classes    
+testbin                 ${target-dir}/test-classes
