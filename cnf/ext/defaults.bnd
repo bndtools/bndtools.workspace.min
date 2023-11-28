@@ -1,0 +1,39 @@
+-plugin.10.build: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
+        releaseUrl=https://repo.maven.apache.org/maven2/; \
+        index=${.}/build.mvn; \
+        readOnly=true; \
+        name="OSGI R8 - Build"
+
+-plugin.20.runtime: \
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
+        releaseUrl="https://repo.maven.apache.org/maven2/"; \
+        index=${.}/runtime.mvn; \
+        readOnly=true; \
+        name="OSGI R8 - Runtime Distro"
+
+
+
+
+-runsystemcapabilities.dflt:    ${native_capability}
+
+debug-bundles: \
+    osgi.identity;filter:='(osgi.identity=osgi.enroute.webconsole.xray.provider)',\
+    osgi.implementation;filter:='(osgi.implementation=osgi.metatype)',\
+    osgi.implementation;filter:='(osgi.implementation=osgi.event)',\
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)',\
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)', \
+    osgi.identity;filter:='(osgi.identity=org.apache.felix.webconsole.plugins.ds)'
+
+# the driver-variable (see https://bnd.bndtools.org/macros/driver.html) 
+# helps to build to different folders e.g. depending on if Eclipse builds 
+# or e.g. gradle builds. 
+# that avoids conflicts between gradle and eclipse build
+# target-dir: dir specifies where build places the .jar and classes
+target-dir              generated${if;${driver;eclipse};;/${driver}}
+src                     src/main/java, src/main/resources
+testsrc                 src/test/java
+bin                     ${target-dir}/classes
+testbin                 ${target-dir}/test-classes
