@@ -37,3 +37,6 @@ src                     src/main/java, src/main/resources
 testsrc                 src/test/java
 bin                     ${target-dir}/classes
 testbin                 ${target-dir}/test-classes
+
+junit: org.osgi:osgi.enroute.junit.wrapper
+
