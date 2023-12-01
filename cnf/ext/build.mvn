@@ -93,6 +93,8 @@ org.osgi:slf4j.osgi:2.0.0
 
 org.slf4j:slf4j-api:2.0.9
 
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
+org.mockito:mockito-core:2.13.0
 org.mockito:mockito-all:1.10.19
 org.easymock:easymock:5.2.0
 org.assertj:assertj-core:3.24.2
