@@ -38,5 +38,7 @@ testsrc                 src/test/java
 bin                     ${target-dir}/classes
 testbin                 ${target-dir}/test-classes
 
-junit: org.osgi:osgi.enroute.junit.wrapper
-
+# This is the version of JUnit that will be used at build time and run time
+junit: org.apache.servicemix.bundles.junit
+mockito: org.mockito.mockito-core,\
+  org.objenesis
