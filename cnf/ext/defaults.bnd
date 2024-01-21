@@ -14,9 +14,6 @@
         readOnly=true; \
         name="OSGI R8 - Runtime Distro"
 
-
-
-
 -runsystemcapabilities.dflt:    ${native_capability}
 
 debug-bundles: \
