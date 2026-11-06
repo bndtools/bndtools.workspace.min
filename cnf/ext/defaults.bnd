@@ -1,6 +1,5 @@
 -plugin.10.build: \
     aQute.bnd.repository.maven.provider.MavenBndRepository; \
-        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
         releaseUrl=https://repo.maven.apache.org/maven2/; \
         index=${.}/build.mvn; \
         readOnly=true; \
@@ -8,7 +7,6 @@
 
 -plugin.20.runtime: \
     aQute.bnd.repository.maven.provider.MavenBndRepository; \
-        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
         releaseUrl="https://repo.maven.apache.org/maven2/"; \
         index=${.}/runtime.mvn; \
         readOnly=true; \
@@ -38,4 +36,6 @@ testbin                 ${target-dir}/test-classes
 # This is the version of JUnit that will be used at build time and run time
 junit: org.apache.servicemix.bundles.junit
 mockito: org.mockito.mockito-core,\
+    net.bytebuddy.byte-buddy,\
+    net.bytebuddy.byte-buddy-agent,\
   org.objenesis

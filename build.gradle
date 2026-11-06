@@ -1,3 +1,215 @@
-tasks.named('wrapper') {
-  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+import aQute.bnd.build.Workspace
+import aQute.bnd.build.model.EE
+import aQute.bnd.osgi.Domain
+import aQute.bnd.osgi.resource.ResourceBuilder
+import aQute.bnd.osgi.resource.ResourceUtils
+import aQute.bnd.repository.maven.provider.MavenBndRepository
+import aQute.bnd.version.MavenVersion
+import biz.aQute.resolve.Bndrun
+import java.util.jar.JarFile
+import javax.xml.parsers.DocumentBuilderFactory
+
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath "biz.aQute.bnd:biz.aQute.resolve:${bnd_version}"
+  }
+}
+
+plugins {
+  id 'base'
+}
+
+layout.buildDirectory = layout.projectDirectory.dir('generated')
+
+def readCatalogs = {
+  def coordinates = [:]
+  ['build', 'runtime'].each { catalog ->
+    def seen = [] as Set
+    file("cnf/ext/${catalog}.mvn").eachLine { line ->
+      def coordinate = line.trim()
+      if (coordinate && !coordinate.startsWith('#')) {
+        def parts = coordinate.split(':')
+        if (parts.length != 3 || !(parts[2] ==~ /\d+([._]\d+)*/)) {
+          throw new GradleException("Invalid stable coordinate in ${catalog}.mvn: ${coordinate}")
+        }
+        def key = "${parts[0]}:${parts[1]}".toString()
+        if (!seen.add(key)) {
+          throw new GradleException("Duplicate artifact in ${catalog}.mvn: ${key}")
+        }
+        if (coordinates.containsKey(key) && coordinates[key] != parts[2]) {
+          throw new GradleException("Conflicting catalog versions for ${key}")
+        }
+        coordinates[key] = parts[2]
+      }
+    }
+  }
+  coordinates
+}
+
+tasks.register('verifyDependencies') {
+  group = 'verification'
+  description = 'Check catalog alignment, Java 17 compatibility, and OSGi runtime resolution.'
+  doLast {
+    def coordinates = readCatalogs()
+    coordinates.findAll { key, version -> key.startsWith('biz.aQute.bnd:') }.each { key, version ->
+      if (version != bnd_version) {
+        throw new GradleException("${key} must match bnd_version=${bnd_version}")
+      }
+    }
+    ['org.slf4j:', 'net.bytebuddy:', 'org.ow2.asm:'].each { family ->
+      def versions = coordinates.findAll { key, version -> key.startsWith(family) }.values().toSet()
+      if (versions.size() > 1) {
+        throw new GradleException("Misaligned ${family} versions: ${versions}")
+      }
+    }
+    def environment = new ResourceBuilder()
+    environment.addAllExecutionEnvironments(EE.JavaSE_17)
+    def java17 = environment.build()
+    def checked = [] as Set
+    def runtimeBundles = [] as Set
+    def artifactsByIdentity = [:]
+    new Workspace(rootDir).withCloseable { workspace ->
+      workspace.setProperty('-remoteworkspace', 'false')
+      workspace.repositories.findAll { it instanceof MavenBndRepository }.each { repository ->
+        repository.list(null)
+        if (repository.indexFile.name == 'runtime.mvn') {
+          runtimeBundles.addAll(repository.list(null))
+        }
+        if (repository.status) {
+          throw new GradleException("${repository.name}: ${repository.status}")
+        }
+        repository.archives.each { archive ->
+          if (checked.add(archive.toString())) {
+            def artifact = new File(repository.root, archive.localPath)
+            if (!artifact.isFile()) {
+              throw new GradleException("Missing catalog artifact: ${archive}")
+            }
+            new JarFile(artifact).withCloseable { jar ->
+              if (!jar.manifest?.mainAttributes?.getValue('Bundle-SymbolicName')) {
+                throw new GradleException("Not an OSGi bundle: ${archive}")
+              }
+              artifactsByIdentity[jar.manifest.mainAttributes.getValue('Bundle-SymbolicName').split(';')[0]] = artifact
+              def builder = new ResourceBuilder()
+              builder.addManifest(Domain.domain(jar.manifest))
+              builder.build().getRequirements('osgi.ee').each { requirement ->
+                if (!ResourceUtils.matches(requirement, java17)) {
+                  throw new GradleException("${archive} requires ${requirement}, not Java 17")
+                }
+              }
+              jar.entries().each { entry ->
+                if (entry.name.endsWith('.class') && !entry.name.startsWith('META-INF/versions/')) {
+                  jar.getInputStream(entry).withCloseable { stream ->
+                    def data = new DataInputStream(stream)
+                    data.readInt()
+                    data.readUnsignedShort()
+                    def major = data.readUnsignedShort()
+                    if (major > 61) {
+                      throw new GradleException("${archive}: ${entry.name} needs class version ${major}, above Java 17")
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      if (checked.size() != coordinates.size()) {
+        throw new GradleException("Indexed ${checked.size()} artifacts, expected ${coordinates.size()}")
+      }
+      logger.lifecycle("Verified ${checked.size()} catalog artifacts on Java 17")
+      def profiles = [
+        core: ['org.apache.felix.scr', 'org.apache.felix.configadmin',
+          'org.apache.felix.configurator', 'org.apache.felix.eventadmin',
+          'org.apache.felix.metatype', 'org.apache.felix.log', 'org.eclipse.equinox.log.stream'],
+        http: ['org.apache.felix.http.jetty', 'org.apache.felix.webconsole',
+          'org.apache.felix.webconsole.plugins.ds'],
+        gogo: ['org.apache.felix.gogo.command', 'org.apache.felix.gogo.jline'],
+        tests: ['org.mockito.mockito-core', 'org.easymock', 'assertj-core',
+          'org.apache.servicemix.bundles.junit'],
+        ecf: ['org.eclipse.ecf.osgi.services.remoteserviceadmin',
+          'org.eclipse.ecf.provider.jmdns', 'org.eclipse.ecf.osgi.services.remoteserviceadmin.console']
+      ]
+      def resolveProfile = { name, bundles, framework ->
+        new Bndrun(workspace, file('cnf/verify.bndrun')).withCloseable { run ->
+          run.setProperty('-runfw', framework)
+          run.setProperty('-runrequires', bundles.collect {
+            "osgi.identity;filter:='(osgi.identity=${it})'"
+          }.join(','))
+          run.setProperty('-resolve.effective', 'active')
+          run.resolve(false, false)
+          if (!run.ok) {
+            throw new GradleException("${name}: ${run.errors}")
+          }
+        }
+      }
+      profiles.each { name, bundles ->
+        resolveProfile(name, bundles, name == 'ecf' ? 'org.eclipse.osgi' : 'org.apache.felix.framework')
+        logger.lifecycle("Resolved ${name} profile on JavaSE-17")
+      }
+      def frameworks = ['org.apache.felix.framework', 'org.eclipse.osgi']
+      runtimeBundles.findAll { !frameworks.contains(it) }.sort().each { identity ->
+        def framework = identity.startsWith('org.eclipse.') && !identity.startsWith('org.eclipse.parsson')
+          ? 'org.eclipse.osgi' : 'org.apache.felix.framework'
+        resolveProfile(identity, [identity], framework)
+      }
+      logger.lifecycle("Resolved ${runtimeBundles.size() - frameworks.size()} individual runtime identities")
+      def mockDependencies = ['org.mockito.mockito-core', 'org.easymock',
+        'net.bytebuddy.byte-buddy', 'net.bytebuddy.byte-buddy-agent', 'org.objenesis']
+      def urls = mockDependencies.collect { artifactsByIdentity[it].toURI().toURL() }
+      new URLClassLoader(urls as URL[], ClassLoader.platformClassLoader).withCloseable { loader ->
+        ['org.mockito.Mockito': 'mock', 'org.easymock.EasyMock': 'createMock'].each { name, method ->
+          def mock = loader.loadClass(name).getMethod(method, Class).invoke(null, ArrayList)
+          if (!(mock instanceof List) || mock.size() != 0) {
+            throw new GradleException("${name} class-mocking smoke test failed")
+          }
+          logger.lifecycle("Passed ${name} class-mocking smoke test")
+        }
+      }
+      if (!workspace.ok) {
+        throw new GradleException("Workspace errors: ${workspace.errors}")
+      }
+    }
+  }
+}
+
+tasks.named('check') {
+  dependsOn tasks.named('verifyDependencies')
+}
+
+tasks.register('dependencyUpdates') {
+  group = 'help'
+  description = 'Report latest stable Maven Central versions, without changing catalogs.'
+  doLast {
+    def parser = DocumentBuilderFactory.newInstance()
+    parser.setFeature('http://apache.org/xml/features/disallow-doctype-decl', true)
+    def report = ['# Maven Central Dependency Audit', '',
+      'Latest stable does not imply Java or OSGi compatibility.', '',
+      '| Artifact | Selected | Latest Stable |', '| --- | --- | --- |']
+    readCatalogs().sort().each { coordinate, selected ->
+      def parts = coordinate.split(':')
+      def connection = new URI("https://repo.maven.apache.org/maven2/${parts[0].replace('.', '/')}/${parts[1]}/maven-metadata.xml").toURL().openConnection()
+      connection.connectTimeout = 20000
+      connection.readTimeout = 20000
+      connection.inputStream.withCloseable { stream ->
+        def versions = parser.newDocumentBuilder().parse(stream).getElementsByTagName('version')
+        def stable = (0..<versions.length).collect { versions.item(it).textContent }
+          .findAll { it ==~ /\d+([._]\d+)*/ }
+        if (!stable.contains(selected)) {
+          throw new GradleException("Selected version absent from Maven Central metadata: ${coordinate}:${selected}")
+        }
+        def latest = stable.max { left, right -> new MavenVersion(left).compareTo(new MavenVersion(right)) }
+        report.add("| ${coordinate} | ${selected} | ${latest} |")
+        if (latest != selected) {
+          logger.lifecycle("${coordinate}: ${selected} -> ${latest}")
+        }
+      }
+    }
+    def output = layout.buildDirectory.file('dependency-updates.md').get().asFile
+    output.parentFile.mkdirs()
+    output.setText(report.join('\n') + '\n', 'UTF-8')
+    logger.lifecycle("Maven Central audit: ${output}")
+  }
 }

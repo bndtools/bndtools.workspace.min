@@ -1,10 +1,10 @@
 # OSGi R8
 
-biz.aQute.bnd:biz.aQute.bndlib:7.0.0
-biz.aQute.bnd:aQute.libg:7.0.0
-biz.aQute.bnd:biz.aQute.launchpad:7.0.0
-biz.aQute.bnd:biz.aQute.bnd.runtime.gogo:7.0.0
-biz.aQute.bnd:biz.aQute.bnd.runtime.snapshot:7.0.0
+biz.aQute.bnd:biz.aQute.bndlib:7.4.0
+biz.aQute.bnd:aQute.libg:7.4.0
+biz.aQute.bnd:biz.aQute.launchpad:7.4.0
+biz.aQute.bnd:biz.aQute.bnd.runtime.gogo:7.4.0
+biz.aQute.bnd:biz.aQute.bnd.runtime.snapshot:7.4.0
 biz.aQute:biz.aQute.osgi.templates:1.10.0
 
 org.osgi:org.osgi.annotation.bundle:2.0.0
@@ -91,14 +91,15 @@ org.osgi:osgi.enterprise:7.0.0
 org.osgi:osgi.promise:8.1.0
 org.osgi:slf4j.osgi:2.0.0
 
-org.slf4j:slf4j-api:2.0.9
+org.slf4j:slf4j-api:2.0.20
 
-org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
-org.mockito:mockito-core:2.13.0
-org.mockito:mockito-all:1.10.19
-org.easymock:easymock:5.2.0
-org.assertj:assertj-core:3.24.2
-org.objenesis:objenesis:2.6
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.13.2_1
+org.mockito:mockito-core:5.24.0
+net.bytebuddy:byte-buddy:1.18.15
+net.bytebuddy:byte-buddy-agent:1.18.15
+org.easymock:easymock:5.7.0
+org.assertj:assertj-core:3.27.7
+org.objenesis:objenesis:3.6
 
 
 org.osgi:osgi.enroute.junit.wrapper:4.12.0
